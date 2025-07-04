@@ -1,3 +1,4 @@
+#1_User_Dashboard.py
 import streamlit as st
 import pandas as pd
 import datetime
@@ -34,9 +35,24 @@ for i, product in enumerate(products):
     with cols[i % 2]:
         st.subheader(product["name"])
         st.write(f"💰 Price: ₹{product['price']}")
-        quantity = st.number_input(f"Select quantity for {product['name']}", min_value=1, max_value=10, step=1, key=f"qty_{product['name']}")
+        quantity = st.number_input(
+            f"Select quantity for {product['name']}",
+            min_value=1,
+            max_value=10,
+            step=1,
+            key=f"qty_{product['name']}"
+        )
         if st.button(f"Add to Cart: {product['name']}", key=product["name"]):
-            st.session_state.cart.append({"name": product["name"], "price": product["price"], "quantity": quantity})
+            # Check if item already in cart, then update quantity
+            existing = next((item for item in st.session_state.cart if item["name"] == product["name"]), None)
+            if existing:
+                existing["quantity"] += quantity
+            else:
+                st.session_state.cart.append({
+                    "name": product["name"],
+                    "price": product["price"],
+                    "quantity": quantity
+                })
 
 # ---------------------
 # 🛒 Cart Summary
@@ -67,21 +83,27 @@ if st.session_state.cart:
         file_exists = os.path.exists(file_path)
         df_to_save.to_csv(file_path, mode='a', index=False, header=not file_exists)
 
-        # Detect anomalies (simple rule-based)
+        # Anomaly detection
         item_counts = df_to_save['name'].value_counts()
         for item, count in item_counts.items():
             if count >= 5:
                 st.warning(f"⚠️ Anomaly Detected: {count} units of '{item}' in one order.")
 
-        # Optional: Run fraud detection on order
+        # Optional: Run fraud detection if schema matches
         try:
-            features = df_to_save[['name']].rename(columns={'name': 'product'})  # Dummy transform
-            fraud_results = predict_fraud(features)  # Can adapt to real schema
-            st.info("Fraud detection run (demo mode).")
+            required_columns = {'payment_method', 'login_location', 'device_type', 'browser_os',
+                                'cookie_behavior', 'session_token_behavior', 'email_reputation'}
+
+            if required_columns.issubset(df_to_save.columns):
+                fraud_results = predict_fraud(df_to_save)
+                st.info("Fraud detection run (demo mode).")
+            else:
+                st.info("Skipping fraud detection (missing required fields).")
         except Exception as e:
-            st.error(f"Fraud check failed (expected if schema mismatch): {e}")
+            st.error(f"Fraud check failed: {e}")
 
         st.session_state.cart = []
+
 else:
     st.info("🛒 Your cart is empty.")
 

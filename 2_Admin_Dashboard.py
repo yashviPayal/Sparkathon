@@ -1,3 +1,4 @@
+#2_Admin_Dashboard.py
 import streamlit as st
 import pandas as pd
 from utils.fraud_model import predict_fraud  # ✅ your real-time prediction logic
@@ -25,18 +26,33 @@ if uploaded_file is not None:
         st.write("📋 Uploaded Data Sample:")
         st.dataframe(df.head())
 
-        if st.button("🧠 Run Fraud Detection"):
-            with st.spinner("Analyzing transactions..."):
-                result_df = predict_fraud(df)
-                st.success("✅ Prediction Complete!")
+        # Required columns for fraud detection model
+        required_columns = [
+            'payment_method', 'login_location', 'device_type', 'browser_os',
+            'cookie_behavior', 'session_token_behavior', 'email_reputation'
+        ]
 
-                # Display results
-                st.subheader("🧾 Prediction Results:")
-                st.dataframe(result_df)
+        missing_cols = [col for col in required_columns if col not in df.columns]
 
-                # Download button
-                csv = result_df.to_csv(index=False).encode("utf-8")
-                st.download_button("⬇ Download Result CSV", csv, "fraud_results.csv", "text/csv")
+        if missing_cols:
+            st.error(f"❌ Missing required columns for fraud detection: {', '.join(missing_cols)}")
+        else:
+            if st.button("🧠 Run Fraud Detection"):
+                with st.spinner("Analyzing transactions..."):
+                    try:
+                        result_df = predict_fraud(df)
+                        st.success("✅ Prediction Complete!")
+
+                        # Display results
+                        st.subheader("🧾 Prediction Results:")
+                        st.dataframe(result_df)
+
+                        # Download button
+                        csv = result_df.to_csv(index=False).encode("utf-8")
+                        st.download_button("⬇ Download Result CSV", csv, "fraud_results.csv", "text/csv")
+
+                    except Exception as e:
+                        st.error(f"⚠️ Error during prediction: {e}")
 
     except Exception as e:
-        st.error(f"⚠️ Error: {e}")
+        st.error(f"⚠️ Error reading file: {e}")
