@@ -1,0 +1,2 @@
+username,password,role,phone,email
+Yashvi,scrypt:32768:8:1$6DtkJK1aVLDLiVrW$8324127c7252f27c26759e0bb43e2f76c16095e70cc3acd716a1063ca3ea66172b7c13774fc5947ff2562a0d14d113286bed679e318365b3d8ba95170a025553,admin,0123456789,yashvi@gmail.com
