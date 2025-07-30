@@ -1,0 +1,7 @@
+streamlit==1.46.1
+streamlit-extras>=0.2.7
+pandas
+scikit-learn
+joblib
+protobuf>=3.20.0,<5.0
+email-validator
