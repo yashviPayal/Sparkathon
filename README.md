@@ -1,4 +1,4 @@
-# Walmart Sparkathon
+# Walmart Sparkathon 2025
 **Building Trust with Cybersecurity**
 
 **Team CodeCrafters**
